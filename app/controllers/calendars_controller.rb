@@ -31,13 +31,26 @@ class CalendarsController < ApplicationController
     plans = Plan.where(date: @todays_date..@todays_date + 6)
 
     7.times do |x|
-      today_plans = []
-      plans.each do |plan|
-        today_plans.push(plan.plan) if plan.date == @todays_date + x
-      end
-      days = { :month => (@todays_date + x).month, :date => (@todays_date+x).day, :plans => today_plans}
-      @week_days.push(days)
+    # 一日の予定を格納するための配列を準備
+    today_plans = []
+    plans.each do |plan|
+      # 予定の日付が一致したら、その予定をtoday_plansに追加
+      today_plans.push(plan.plan) if plan.date == @todays_date + x
     end
 
+    # x日後の日付から曜日を取得
+    wday = (@todays_date + x).wday
+
+    # 日付、曜日、予定をハッシュに格納
+    day = {
+      month: (@todays_date + x).month,
+      date: (@todays_date + x).day,
+      plans: today_plans,
+      wday: wdays[wday]
+    }
+
+    # ハッシュを@week_days配列に追加
+    @week_days.push(day)
+    end
   end
 end
