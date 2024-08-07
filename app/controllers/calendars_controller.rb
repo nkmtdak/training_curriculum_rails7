@@ -2,13 +2,13 @@ class CalendarsController < ApplicationController
 
   # １週間のカレンダーと予定が表示されるページ
   def index
-    #(issue2)この下のメソッド名をスネークケースに変更しました
     get_week
     @plan = Plan.new
   end
 
   # 予定の保存
   def create
+
     Plan.create(plan_params)
     redirect_to action: :index
   end
@@ -16,9 +16,8 @@ class CalendarsController < ApplicationController
   private
 
   def plan_params
-    params.require(:calendars).permit(:date, :plan)
+    params.require(:plan).permit(:date, :plan)
   end
-  #(issue2)この下のメソッド名をスネークケースに変更しました
   def get_week
     wdays = ['(日)','(月)','(火)','(水)','(木)','(金)','(土)']
 
@@ -31,14 +30,26 @@ class CalendarsController < ApplicationController
     plans = Plan.where(date: @todays_date..@todays_date + 6)
 
     7.times do |x|
-      today_plans = []
-      plans.each do |plan|
-        today_plans.push(plan.plan) if plan.date == @todays_date + x
-      end
-      # (issue1)この下の部分を修正しました。
-      # 修正前の記述：days = { :month => (@todays_date + x).month, :date => (@todays_date + x).day, :plans => today_plans }
-      days = { month: (@todays_date + x).month, date: (@todays_date + x).day, plans: today_plans }
-      @week_days.push(days)
+    # 一日の予定を格納するための配列を準備
+    today_plans = []
+    plans.each do |plan|
+      # 予定の日付が一致したら、その予定をtoday_plansに追加
+      today_plans.push(plan.plan) if plan.date == @todays_date + x
+    end
+
+    # x日後の日付から曜日を取得
+    wday = (@todays_date + x).wday
+
+    # 日付、曜日、予定をハッシュに格納
+    day = {
+      month: (@todays_date + x).month,
+      date: (@todays_date + x).day,
+      plans: today_plans,
+      wday: wdays[wday]
+    }
+
+    # ハッシュを@week_days配列に追加
+    @week_days.push(day)
     end
   end
 end
